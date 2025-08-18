@@ -4,7 +4,7 @@ services:
     # Constrói a imagem a partir do Dockerfile no diretório atual (.)
     build: .
     # Nome da imagem que será criada
-    image: meu-erp-local
+    image: erp-maganinautomec
     # Mapeamento de portas: <porta_na_sua_maquina>:<porta_no_container>
     ports:
       - "8080:8080"
