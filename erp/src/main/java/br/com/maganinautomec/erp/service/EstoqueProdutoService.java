@@ -18,4 +18,32 @@ public class EstoqueProdutoService {
         List<EstoqueProdutoEntity> produtos = estoqueProdutoRepository.findAll();
         return produtos.stream().map(EstoqueProdutoDTO::new).toList();
     }
+
+    public void criarProduto(EstoqueProdutoDTO estoqueProduto) {
+        EstoqueProdutoEntity estoqueProdutoEntity = new EstoqueProdutoEntity(estoqueProduto);
+        estoqueProdutoRepository.save(estoqueProdutoEntity);
+    }
+
+    public EstoqueProdutoDTO atualizarProduto(EstoqueProdutoDTO estoqueProduto) {
+        EstoqueProdutoEntity produtoExistente = estoqueProdutoRepository.findById(estoqueProduto.getId())
+                .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
+
+        produtoExistente.setNomeProduto(estoqueProduto.getNomeProduto());
+        produtoExistente.setPrecoProduto(estoqueProduto.getPrecoProduto());
+        produtoExistente.setFornecedor(estoqueProduto.getFornecedor());
+        produtoExistente.setQuantidadeEstoque(estoqueProduto.getQuantidadeEstoque());
+        produtoExistente.setDataCompra(estoqueProduto.getDataCompra());
+
+        EstoqueProdutoEntity produtoAtualizado = estoqueProdutoRepository.save(produtoExistente);
+        return new EstoqueProdutoDTO(produtoAtualizado);
+    }
+
+    public void deletarProduto(Long id) {
+        EstoqueProdutoEntity produto = estoqueProdutoRepository.findById(id).get();
+        estoqueProdutoRepository.delete(produto);
+    }
+
+    public EstoqueProdutoDTO buscaPorId(Long id) {
+        return new EstoqueProdutoDTO(estoqueProdutoRepository.findById(id).get());
+    }
 }
