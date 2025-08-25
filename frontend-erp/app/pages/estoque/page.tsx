@@ -3,6 +3,8 @@ import { useEffect, useMemo, useState } from "react";
 import { EstoqueProdutoService } from '../../../service/EstoqueProdutoService';
 import Paper from '@mui/material/Paper';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import styles from "./estoque.module.css"
+import { createTheme, ThemeProvider } from "@mui/material";
 
 
 const estoquePage = () => {
@@ -14,6 +16,8 @@ const estoquePage = () => {
         quantidadeEstoque: 0,
         dataCompra: "01-01-01"
     }
+
+    const darkTheme = createTheme({ palette: { mode: 'dark' } });
 
     const columns: GridColDef[] = [
         { field: 'id', headerName: 'ID', width: 70 },
@@ -51,19 +55,23 @@ const estoquePage = () => {
     }, [])
 
     return (
-        <div className="tabelaProdutos">
-            <h1>Estoque</h1>
-            <Paper sx={{ height: 400, width: '100%' }}>
-                <DataGrid
-                    rows={produtos}
-                    columns={columns}
-                    initialState={{ pagination: { paginationModel } }}
-                    pageSizeOptions={[5, 10]}
-                    checkboxSelection
-                    sx={{ border: 50 }}
-                />
-            </Paper>
-        </div>
+        <ThemeProvider theme={darkTheme}>
+            <div className="tabelaProdutos">
+                <h1>Estoque</h1>
+
+                <Paper sx={{ height: 400, width: '100%' }} className={styles.tabela}>
+                    <DataGrid
+                        rows={produtos}
+                        columns={columns}
+                        initialState={{ pagination: { paginationModel } }}
+                        pageSizeOptions={[5, 10]}
+                        checkboxSelection
+                        sx={{ border: 50 }}
+                    />
+                </Paper>
+
+            </div>
+        </ThemeProvider>
     )
 }
 
