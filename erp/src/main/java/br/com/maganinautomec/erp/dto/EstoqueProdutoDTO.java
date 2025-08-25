@@ -11,7 +11,7 @@ public class EstoqueProdutoDTO {
 
     private Long id;
     private String nomeProduto;
-    private int precoProduto;
+    private float precoProduto;
     private String fornecedor;
     private int quantidadeEstoque;
     private LocalDate dataCompra;
@@ -35,11 +35,11 @@ public class EstoqueProdutoDTO {
         this.nomeProduto = nomeProduto;
     }
 
-    public int getPrecoProduto() {
+    public float getPrecoProduto() {
         return precoProduto;
     }
 
-    public void setPrecoProduto(int precoProduto) {
+    public void setPrecoProduto(float precoProduto) {
         this.precoProduto = precoProduto;
     }
 

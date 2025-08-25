@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import org.springframework.beans.BeanUtils;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.Objects;
 
 @Entity
@@ -20,7 +19,7 @@ public class EstoqueProdutoEntity {
     private String nomeProduto;
 
     @Column(nullable = false)
-    private int precoProduto;
+    private float precoProduto;
 
     @Column(nullable = false)
     private String fornecedor;
@@ -50,11 +49,11 @@ public class EstoqueProdutoEntity {
         this.nomeProduto = nomeProduto;
     }
 
-    public int getPrecoProduto() {
+    public float getPrecoProduto() {
         return precoProduto;
     }
 
-    public void setPrecoProduto(int precoProduto) {
+    public void setPrecoProduto(float precoProduto) {
         this.precoProduto = precoProduto;
     }
 
