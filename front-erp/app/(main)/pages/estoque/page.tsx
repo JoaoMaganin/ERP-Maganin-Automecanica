@@ -14,7 +14,6 @@ import { Toast } from 'primereact/toast';
 import { Toolbar } from 'primereact/toolbar';
 import { classNames } from 'primereact/utils';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ProductService } from '../../../../demo/service/ProductService';
 import { EstoqueProdutoService } from '@/demo/service/EstoqueProdutoService';
 
 /* @todo Used 'as any' for types here. Will fix in next version due to onSelectionChange event type issue. */
@@ -36,6 +35,11 @@ const EstoquePage = () => {
     const [produtosSelecionados, setProdutosSelecionados] = useState<ERP.EstoqueProduto[]>([]);
     const [submitted, setSubmitted] = useState(false);
     const [globalFilter, setGlobalFilter] = useState('');
+
+    const [filters, setFilters] = useState({
+        global: { value: "", matchMode: 'contains' }
+    });
+
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<any>>(null);
     const estoqueProdutoService = useMemo(() => new EstoqueProdutoService(), []);
@@ -50,13 +54,6 @@ const EstoquePage = () => {
             })
         }
     }, [produtos]);
-
-    const formatCurrency = (value: number) => {
-        return value.toLocaleString('en-US', {
-            style: 'currency',
-            currency: 'USD'
-        });
-    };
 
     const openNew = () => {
         setProduto(produtoVazio);
@@ -142,14 +139,14 @@ const EstoquePage = () => {
                     setProdutos(null);
                     toast.current?.show({
                         severity: 'success',
-                        summary: 'Successful!',
+                        summary: 'Sucesso!',
                         detail: 'Produto deletado',
                         life: 3000
                     });
                 }).catch((error) => {
                     toast.current?.show({
                         severity: 'error',
-                        summary: 'Error!',
+                        summary: 'Erro!',
                         detail: 'Erro ao deletar produto',
                         life: 3000
                     });
@@ -213,8 +210,9 @@ const EstoquePage = () => {
         return (
             <React.Fragment>
                 <div className="my-2">
-                    <Button label="New" icon="pi pi-plus" severity="success" className=" mr-2" onClick={openNew} />
-                    <Button label="Delete" icon="pi pi-trash" severity="danger" onClick={confirmDeleteSelected} disabled={!produtosSelecionados || !(produtosSelecionados as any).length} />
+                    <Button label="Adicionar" icon="pi pi-plus" severity="success" className=" mr-2" onClick={openNew} />
+                    <Button label="Deletar" icon="pi pi-trash" severity="danger" className=" mr-2" onClick={confirmDeleteSelected} disabled={!produtosSelecionados || !(produtosSelecionados as any).length} />
+                    <Button label="Registrar venda" icon="pi pi-trash" severity="primary" />
                 </div>
             </React.Fragment>
         );
@@ -223,8 +221,7 @@ const EstoquePage = () => {
     const rightToolbarTemplate = () => {
         return (
             <React.Fragment>
-                <FileUpload mode="basic" accept="image/*" maxFileSize={1000000} chooseLabel="Import" className="mr-2 inline-block" />
-                <Button label="Export" icon="pi pi-upload" severity="help" onClick={exportCSV} />
+                <Button label="Gerar planilha" icon="pi pi-upload" severity="help" onClick={exportCSV} />
             </React.Fragment>
         );
     };
@@ -294,10 +291,20 @@ const EstoquePage = () => {
 
     const header = (
         <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-            <h5 className="m-0">Manage Products</h5>
+            <h5 className="m-0">Gerenciamento do estoque</h5>
             <span className="block mt-2 md:mt-0 p-input-icon-left">
                 <i className="pi pi-search" />
-                <InputText type="search" onInput={(e) => setGlobalFilter(e.currentTarget.value)} placeholder="Search..." />
+                <InputText
+                    type="search"
+                    value={(filters.global as any)?.value ?? ""}
+                    onInput={(e) => setGlobalFilter(e.currentTarget.value)}
+                    onChange={(e) =>
+                        setFilters((prev) => ({
+                            ...prev,
+                            global: { ...(prev.global as any), value: e.target.value },
+                        }))
+                    }
+                    placeholder="Search..." />
             </span>
         </div>
     );
@@ -341,23 +348,26 @@ const EstoquePage = () => {
                         rowsPerPageOptions={[5, 10, 25]}
                         className="datatable-responsive"
                         paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products"
+                        currentPageReportTemplate="Mostrando {first} de {last} do total de {totalRecords} produtos"
+                        filters={filters}
+                        onFilter={(e) => setFilters(e.filters)}
+                        globalFilterFields={["nomeProduto", "precoProduto", "fornecedor"]}
                         globalFilter={globalFilter}
-                        emptyMessage="No products found."
+                        emptyMessage="Nenhum produto encontrado."
                         header={header}
                         responsiveLayout="scroll"
                     >
                         <Column selectionMode="multiple" headerStyle={{ width: '4rem' }}></Column>
                         <Column field="id" header="Id" sortable body={idBodyTemplate} headerStyle={{ minWidth: '15rem' }}></Column>
                         <Column field="nomeProduto" header="Nome" sortable body={nomeBodyTemplate} headerStyle={{ minWidth: '15rem' }}></Column>
-                        <Column field="precoProduto" header="Prreço" body={precoBodyTemplate} sortable></Column>
+                        <Column field="precoProduto" header="Preço" body={precoBodyTemplate} sortable></Column>
                         <Column field="fornecedor" header="Fornecedor" sortable body={fornecedorBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
                         <Column field="quantidadeEstoque" header="Quantidade em estoque" body={quantidadeBodyTemplate} sortable></Column>
-                        <Column field="dataCompra" header="Status" body={dataCompraBodyTemplate} sortable headerStyle={{ minWidth: '10rem' }}></Column>
+                        <Column field="dataCompra" header="Data de compra" body={dataCompraBodyTemplate} sortable headerStyle={{ minWidth: '10rem' }}></Column>
                         <Column body={actionBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
                     </DataTable>
 
-                    <Dialog visible={produtoDialog} style={{ width: '450px' }} header="Product Details" modal className="p-fluid" footer={produtoDialogFooter} onHide={hideDialog}>
+                    <Dialog visible={produtoDialog} style={{ width: '450px' }} header="Detalhes do produto" modal className="p-fluid" footer={produtoDialogFooter} onHide={hideDialog}>
                         <div className="field">
                             <label htmlFor="nomeProduto">Nome</label>
                             <InputText
@@ -416,21 +426,21 @@ const EstoquePage = () => {
                         </div>
                     </Dialog>
 
-                    <Dialog visible={deleteProdutoDialog} style={{ width: '450px' }} header="Confirm" modal footer={deleteProdutoDialogFooter} onHide={hideDeleteProdutoDialog}>
+                    <Dialog visible={deleteProdutoDialog} style={{ width: '450px' }} header="Confirmar" modal footer={deleteProdutoDialogFooter} onHide={hideDeleteProdutoDialog}>
                         <div className="flex align-items-center justify-content-center">
                             <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
                             {produto && (
                                 <span>
-                                    Are you sure you want to delete <b>{produto.nomeProduto}</b>?
+                                    Tem certeza que deseja deletar <b>{produto.nomeProduto}</b>?
                                 </span>
                             )}
                         </div>
                     </Dialog>
 
-                    <Dialog visible={deleteProdutosDialog} style={{ width: '450px' }} header="Confirm" modal footer={deleteProdutosDialogFooter} onHide={hideDeleteProdutosDialog}>
+                    <Dialog visible={deleteProdutosDialog} style={{ width: '450px' }} header="Confirmar" modal footer={deleteProdutosDialogFooter} onHide={hideDeleteProdutosDialog}>
                         <div className="flex align-items-center justify-content-center">
                             <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-                            {produto && <span>Are you sure you want to delete the selected products?</span>}
+                            {produto && <span>Tem certeza que deseja deletar os produtos selecionados?</span>}
                         </div>
                     </Dialog>
                 </div>
