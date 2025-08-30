@@ -44,12 +44,22 @@ const EstoquePage = () => {
     const estoqueProdutoService = useMemo(() => new EstoqueProdutoService(), []);
 
     useEffect(() => {
-        estoqueProdutoService.listarTodos().then((response) => {
-            console.log(response.data);
-            setProdutos(response.data);
-        }).catch((erro) => {
-            console.log(erro)
+        // estoqueProdutoService.listarTodos().then((response) => {
+        //     console.log(response.data);
+        //     setProdutos(response.data);
+        // }).catch((erro) => {
+        //     console.log(erro)
+        // })
+
+        estoqueProdutoService.listarTodos()
+        .then((response) => {
+            const produtosComLucro = response.data.map((p: ERP.EstoqueProduto) => ({
+                ...p,
+                lucroPorProduto: (p.precoVendaProduto - p.precoCustoProduto) * p.quantidadeVendida
+            }));
+            setProdutos(produtosComLucro);
         })
+        .catch((erro) => console.log(erro));
     }, [produto]);
 
     useEffect(() => {
@@ -469,7 +479,12 @@ const EstoquePage = () => {
                         <Column field="precoCustoProduto" header="Preço de custo" body={precoCustoBodyTemplate} sortable></Column>
                         <Column field="quantidadeVendida" header="Quantidade vendida" body={quantidadeVendidaBodyTemplate} sortable></Column>
                         <Column field="precoVendaProduto" header="Preço de venda" body={precoVendaProdutoBodyTemplate} sortable></Column>
-                        <Column field="lucroPorProduto" header="Lucro" body={lucroPorProdutoBodyTemplate} sortable></Column>
+                        <Column
+                            field="lucroPorProduto"
+                            header="Lucro"
+                            body={lucroPorProdutoBodyTemplate}
+                            sortable
+                        ></Column>
                         <Column field="dataCompra" header="Data de compra" body={dataCompraBodyTemplate} sortable headerStyle={{ minWidth: '10rem' }}></Column>
                         <Column body={actionBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
                     </DataTable>
