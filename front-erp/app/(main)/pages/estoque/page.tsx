@@ -11,6 +11,7 @@ import { Toolbar } from 'primereact/toolbar';
 import { classNames } from 'primereact/utils';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { EstoqueProdutoService } from '@/demo/service/EstoqueProdutoService';
+import { InputMask } from 'primereact/inputmask';
 
 /* @todo Used 'as any' for types here. Will fix in next version due to onSelectionChange event type issue. */
 const EstoquePage = () => {
@@ -44,22 +45,15 @@ const EstoquePage = () => {
     const estoqueProdutoService = useMemo(() => new EstoqueProdutoService(), []);
 
     useEffect(() => {
-        // estoqueProdutoService.listarTodos().then((response) => {
-        //     console.log(response.data);
-        //     setProdutos(response.data);
-        // }).catch((erro) => {
-        //     console.log(erro)
-        // })
-
         estoqueProdutoService.listarTodos()
-        .then((response) => {
-            const produtosComLucro = response.data.map((p: ERP.EstoqueProduto) => ({
-                ...p,
-                lucroPorProduto: (p.precoVendaProduto - p.precoCustoProduto) * p.quantidadeVendida
-            }));
-            setProdutos(produtosComLucro);
-        })
-        .catch((erro) => console.log(erro));
+            .then((response) => {
+                const produtosComLucro = response.data.map((p: ERP.EstoqueProduto) => ({
+                    ...p,
+                    lucroPorProduto: (p.precoVendaProduto - p.precoCustoProduto) * p.quantidadeVendida
+                }));
+                setProdutos(produtosComLucro);
+            })
+            .catch((erro) => console.log(erro));
     }, [produto]);
 
     useEffect(() => {
@@ -303,14 +297,14 @@ const EstoquePage = () => {
         );
     };
 
-    const idBodyTemplate = (rowData: ERP.EstoqueProduto) => {
-        return (
-            <>
-                <span className="p-column-title">Id</span>
-                {rowData.id}
-            </>
-        );
-    };
+    // const idBodyTemplate = (rowData: ERP.EstoqueProduto) => {
+    //     return (
+    //         <>
+    //             <span className="p-column-title">Id</span>
+    //             {rowData.id}
+    //         </>
+    //     );
+    // };
 
     const nomeBodyTemplate = (rowData: ERP.EstoqueProduto) => {
         return (
@@ -472,7 +466,7 @@ const EstoquePage = () => {
                         }}
                     >
                         <Column selectionMode="multiple" headerStyle={{ width: '4rem' }}></Column>
-                        <Column field="id" header="Id" sortable body={idBodyTemplate}></Column>
+                        {/* <Column field="id" header="Id" sortable body={idBodyTemplate}></Column> */}
                         <Column field="nomeProduto" header="Nome" sortable body={nomeBodyTemplate}></Column>
                         <Column field="fornecedor" header="Fornecedor" sortable body={fornecedorBodyTemplate}></Column>
                         <Column field="quantidadeEstoque" header="Quantidade em estoque" body={quantidadeEstoqueBodyTemplate} sortable></Column>
@@ -562,10 +556,11 @@ const EstoquePage = () => {
 
                         <div className="field">
                             <label htmlFor="dataCompra">Data de compra - Formato: AAAA-MM-DD</label>
-                            <InputText
+                            <InputMask
                                 id="dataCompra"
                                 value={produto.dataCompra}
                                 onChange={(e) => onInputChange(e, 'dataCompra')}
+                                mask="9999-99-99"
                                 required
                                 autoFocus
                                 className={classNames({
