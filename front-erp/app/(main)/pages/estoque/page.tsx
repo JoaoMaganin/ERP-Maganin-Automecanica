@@ -20,7 +20,7 @@ const EstoquePage = () => {
         precoCustoProduto: 0.0,
         fornecedor: '',
         quantidadeEstoque: 0,
-        dataCompra: '',
+        dataCompra: new Date().toLocaleDateString('pt-BR', { year: 'numeric', month: '2-digit', day: '2-digit' }).split('/').reverse().join('-'),
         quantidadeVendida: 0,
         precoVendaProduto: 0.0
     };
@@ -81,6 +81,9 @@ const EstoquePage = () => {
                     setProdutoDialog(false);
                     setProduto(produtoVazio);
                     setProdutos(null);
+                    if(!produto.dataCompra) {
+
+                    }
                     toast.current?.show({
                         severity: 'info',
                         summary: 'Sucesso',
@@ -339,8 +342,8 @@ const EstoquePage = () => {
 
     const produtoDialogFooter = (
         <>
-            <Button label="Cancel" icon="pi pi-times" text onClick={hideDialog} />
-            <Button label="Save" icon="pi pi-check" text onClick={saveProduto} />
+            <Button label="Cancelar" icon="pi pi-times" text onClick={hideDialog} />
+            <Button label="Salvar" icon="pi pi-check" text onClick={saveProduto} />
         </>
     );
 
