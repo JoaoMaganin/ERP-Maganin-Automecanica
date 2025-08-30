@@ -4,12 +4,8 @@ import { Button } from 'primereact/button';
 import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
 import { Dialog } from 'primereact/dialog';
-import { FileUpload } from 'primereact/fileupload';
 import { InputNumber, InputNumberValueChangeEvent } from 'primereact/inputnumber';
 import { InputText } from 'primereact/inputtext';
-import { InputTextarea } from 'primereact/inputtextarea';
-import { RadioButton, RadioButtonChangeEvent } from 'primereact/radiobutton';
-import { Rating } from 'primereact/rating';
 import { Toast } from 'primereact/toast';
 import { Toolbar } from 'primereact/toolbar';
 import { classNames } from 'primereact/utils';
@@ -21,10 +17,12 @@ const EstoquePage = () => {
     let produtoVazio: ERP.EstoqueProduto = {
         id: null,
         nomeProduto: '',
-        precoProduto: 0,
+        precoCustoProduto: 0.0,
         fornecedor: '',
         quantidadeEstoque: 0,
-        dataCompra: ''
+        dataCompra: '',
+        quantidadeVendida: 0,
+        precoVendaProduto: 0.0
     };
 
     const [produtos, setProdutos] = useState(null);
@@ -121,7 +119,11 @@ const EstoquePage = () => {
     };
 
     const editProduto = (produto: ERP.EstoqueProduto) => {
-        setProduto({ ...produto });
+        setProduto({
+            ...produto,
+            precoVendaProduto: parseFloat(produto.precoVendaProduto.toFixed(2)),
+            precoCustoProduto: parseFloat(produto.precoCustoProduto.toFixed(2))
+        });
         setProdutoDialog(true);
     };
 
@@ -212,7 +214,6 @@ const EstoquePage = () => {
                 <div className="my-2">
                     <Button label="Adicionar" icon="pi pi-plus" severity="success" className=" mr-2" onClick={openNew} />
                     <Button label="Deletar" icon="pi pi-trash" severity="danger" className=" mr-2" onClick={confirmDeleteSelected} disabled={!produtosSelecionados || !(produtosSelecionados as any).length} />
-                    <Button label="Registrar venda" icon="pi pi-trash" severity="primary" />
                 </div>
             </React.Fragment>
         );
@@ -244,11 +245,11 @@ const EstoquePage = () => {
         );
     };
 
-    const precoBodyTemplate = (rowData: ERP.EstoqueProduto) => {
+    const precoCustoBodyTemplate = (rowData: ERP.EstoqueProduto) => {
         return (
             <>
                 <span className="p-column-title">Preço</span>
-                {rowData.precoProduto}
+                R$ {rowData.precoCustoProduto}
             </>
         );
     };
@@ -262,11 +263,29 @@ const EstoquePage = () => {
         );
     };
 
-    const quantidadeBodyTemplate = (rowData: ERP.EstoqueProduto) => {
+    const quantidadeEstoqueBodyTemplate = (rowData: ERP.EstoqueProduto) => {
         return (
             <>
                 <span className="p-column-title">Quantidade em estoque</span>
                 {rowData.quantidadeEstoque}
+            </>
+        );
+    };
+
+    const quantidadeVendidaBodyTemplate = (rowData: ERP.EstoqueProduto) => {
+        return (
+            <>
+                <span className="p-column-title">Quantidade em estoque</span>
+                {rowData.quantidadeVendida}
+            </>
+        );
+    };
+
+    const precoVendaProdutoBodyTemplate = (rowData: ERP.EstoqueProduto) => {
+        return (
+            <>
+                <span className="p-column-title">Preço</span>
+                R$ {rowData.precoVendaProduto}
             </>
         );
     };
@@ -276,6 +295,15 @@ const EstoquePage = () => {
             <>
                 <span className="p-column-title">Data de compra</span>
                 {rowData.dataCompra}
+            </>
+        );
+    };
+
+    const lucroPorProdutoBodyTemplate = (rowData: ERP.EstoqueProduto) => {
+        return (
+            <>
+                <span className="p-column-title">Preço</span>
+                R$ {(rowData.precoVendaProduto - rowData.precoCustoProduto) * rowData.quantidadeVendida}
             </>
         );
     };
@@ -351,18 +379,21 @@ const EstoquePage = () => {
                         currentPageReportTemplate="Mostrando {first} de {last} do total de {totalRecords} produtos"
                         filters={filters}
                         onFilter={(e) => setFilters(e.filters)}
-                        globalFilterFields={["nomeProduto", "precoProduto", "fornecedor"]}
+                        globalFilterFields={["nomeProduto", "precoCustoProduto", "fornecedor", "dataCompra"]}
                         globalFilter={globalFilter}
                         emptyMessage="Nenhum produto encontrado."
                         header={header}
                         responsiveLayout="scroll"
                     >
                         <Column selectionMode="multiple" headerStyle={{ width: '4rem' }}></Column>
-                        <Column field="id" header="Id" sortable body={idBodyTemplate} headerStyle={{ minWidth: '15rem' }}></Column>
+                        <Column field="id" header="Id" sortable body={idBodyTemplate}></Column>
                         <Column field="nomeProduto" header="Nome" sortable body={nomeBodyTemplate} headerStyle={{ minWidth: '15rem' }}></Column>
-                        <Column field="precoProduto" header="Preço" body={precoBodyTemplate} sortable></Column>
                         <Column field="fornecedor" header="Fornecedor" sortable body={fornecedorBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
-                        <Column field="quantidadeEstoque" header="Quantidade em estoque" body={quantidadeBodyTemplate} sortable></Column>
+                        <Column field="quantidadeEstoque" header="Quantidade em estoque" body={quantidadeEstoqueBodyTemplate} sortable></Column>
+                        <Column field="precoCustoProduto" header="Preço de custo" body={precoCustoBodyTemplate} sortable></Column>
+                        <Column field="quantidadeVendida" header="Quantidade vendida" body={quantidadeVendidaBodyTemplate} sortable></Column>
+                        <Column field="precoVendaProduto" header="Preço de venda" body={precoVendaProdutoBodyTemplate} sortable></Column>
+                        <Column field="lucroPorProduto" header="Lucro por produto" body={lucroPorProdutoBodyTemplate} sortable></Column>
                         <Column field="dataCompra" header="Data de compra" body={dataCompraBodyTemplate} sortable headerStyle={{ minWidth: '10rem' }}></Column>
                         <Column body={actionBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
                     </DataTable>
@@ -384,12 +415,6 @@ const EstoquePage = () => {
                         </div>
 
                         <div className="field">
-                            <label htmlFor="precoProduto">Price</label>
-                            <InputNumber id="precoProduto" value={produto.precoProduto} onValueChange={(e) => onInputNumberChange(e, 'precoProduto')} />
-                            {submitted && !produto.nomeProduto && <small className="p-invalid">Preço é obrigatório.</small>}
-                        </div>
-
-                        <div className="field">
                             <label htmlFor="fornecedor">Fornecedor</label>
                             <InputText
                                 id="fornecedor"
@@ -408,6 +433,38 @@ const EstoquePage = () => {
                             <label htmlFor="quantidadeEstoque">Quantidade em estoque</label>
                             <InputNumber id="quantidadeEstoque" value={produto.quantidadeEstoque} onValueChange={(e) => onInputNumberChange(e, 'quantidadeEstoque')} />
                             {submitted && !produto.quantidadeEstoque && <small className="p-invalid">Quantidade é obrigatório.</small>}
+                        </div>
+
+                        <div className="field">
+                            <label htmlFor="precoCustoProduto">Preço de custo</label>
+                            <InputNumber
+                                id="precoCustoProduto"
+                                value={produto.quantidadeEstoque}
+                                onValueChange={(e) => onInputNumberChange(e, 'precoCustoProduto')}
+                                mode="decimal"
+                                minFractionDigits={0}
+                                maxFractionDigits={2}
+                            />
+                            {submitted && !produto.nomeProduto && <small className="p-invalid">Preço é obrigatório.</small>}
+                        </div>
+
+                        <div className="field">
+                            <label htmlFor="quantidadeVendida">Quantidade vendida</label>
+                            <InputNumber id="quantidadeVendida" value={produto.quantidadeVendida} onValueChange={(e) => onInputNumberChange(e, 'quantidadeVendida')} />
+                            {submitted && !produto.quantidadeVendida && <small className="p-invalid">Quantidade vendida.</small>}
+                        </div>
+
+                        <div className="field">
+                            <label htmlFor="precoVendaProduto">Preço de venda</label>
+                            <InputNumber
+                                id="precoVendaProduto"
+                                value={produto.precoVendaProduto}
+                                onValueChange={(e) => onInputNumberChange(e, 'precoVendaProduto')}
+                                mode="decimal"
+                                minFractionDigits={0}
+                                maxFractionDigits={2}
+                            />
+                            {submitted && !produto.precoVendaProduto && <small className="p-invalid">Preço de venda é obrigatório.</small>}
                         </div>
 
                         <div className="field">

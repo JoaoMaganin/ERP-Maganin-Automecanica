@@ -3,9 +3,11 @@ declare namespace ERP {
     type EstoqueProduto = {
         id?: number | null;
         nomeProduto: string;
-        precoProduto: number;
+        precoCustoProduto: number;
         fornecedor: string;
         quantidadeEstoque: number;
+        quantidadeVendida: number;
+        precoVendaProduto: number;
         dataCompra: string;
     }
 }
