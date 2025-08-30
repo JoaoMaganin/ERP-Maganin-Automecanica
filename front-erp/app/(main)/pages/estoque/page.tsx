@@ -25,7 +25,7 @@ const EstoquePage = () => {
         precoVendaProduto: 0.0
     };
 
-    const [produtos, setProdutos] = useState(null);
+    const [produtos, setProdutos] = useState<ERP.EstoqueProduto[]>([]);
     const [produtoDialog, setProdutoDialog] = useState(false);
     const [deleteProdutoDialog, setDeleteProdutoDialog] = useState(false);
     const [deleteProdutosDialog, setDeleteProdutosDialog] = useState(false);
@@ -33,6 +33,7 @@ const EstoquePage = () => {
     const [produtosSelecionados, setProdutosSelecionados] = useState<ERP.EstoqueProduto[]>([]);
     const [submitted, setSubmitted] = useState(false);
     const [globalFilter, setGlobalFilter] = useState('');
+    const [lucro, setLucro] = useState(0);
 
     const [filters, setFilters] = useState({
         global: { value: "", matchMode: 'contains' }
@@ -43,13 +44,22 @@ const EstoquePage = () => {
     const estoqueProdutoService = useMemo(() => new EstoqueProdutoService(), []);
 
     useEffect(() => {
-        if (!produtos) {
-            estoqueProdutoService.listarTodos().then((response) => {
-                console.log(response.data);
-                setProdutos(response.data);
-            }).catch((erro) => {
-                console.log(erro)
-            })
+        estoqueProdutoService.listarTodos().then((response) => {
+            console.log(response.data);
+            setProdutos(response.data);
+        }).catch((erro) => {
+            console.log(erro)
+        })
+    }, [produto]);
+
+    useEffect(() => {
+        if (produtos && produtos.length > 0) {
+            let totalLucro = produtos.reduce(
+                (acc, produto) => acc + ((produto.precoVendaProduto - produto.precoCustoProduto) * produto.quantidadeVendida || 0),
+                0
+            );
+            console.log(totalLucro);
+            setLucro(totalLucro);
         }
     }, [produtos]);
 
@@ -93,7 +103,15 @@ const EstoquePage = () => {
             return true;
         }
 
+        if (produto.quantidadeVendida > produto.quantidadeEstoque) {
+            return true;
+        }
+
         if (produto.precoVendaProduto < 0) {
+            return true;
+        }
+
+        if (produto.precoVendaProduto <= produto.precoCustoProduto) {
             return true;
         }
 
@@ -122,7 +140,7 @@ const EstoquePage = () => {
                 .then((response) => {
                     setProdutoDialog(false);
                     setProduto(produtoVazio);
-                    setProdutos(null);
+                    setProdutos([]);
                     if (!produto.dataCompra) {
 
                     }
@@ -148,7 +166,7 @@ const EstoquePage = () => {
                 .then((response) => {
                     setProdutoDialog(false);
                     setProduto(produtoVazio);
-                    setProdutos(null);
+                    setProdutos([]);
                     toast.current?.show({
                         severity: 'info',
                         summary: 'Success',
@@ -186,7 +204,7 @@ const EstoquePage = () => {
                 .then((response) => {
                     setProduto(produtoVazio);
                     setDeleteProdutoDialog(false);
-                    setProdutos(null);
+                    setProdutos([]);
                     toast.current?.show({
                         severity: 'success',
                         summary: 'Sucesso!',
@@ -220,7 +238,7 @@ const EstoquePage = () => {
                 }
             })
         ).then((response) => {
-            setProdutos(null);
+            setProdutos([]);
             setProdutosSelecionados([]);
             setDeleteProdutosDialog(false);
             toast.current?.show({
@@ -351,7 +369,7 @@ const EstoquePage = () => {
         return (
             <>
                 <span className="p-column-title">Preço</span>
-                R$ {(rowData.precoVendaProduto - rowData.precoCustoProduto) * rowData.quantidadeVendida}
+                R$ {((rowData.precoVendaProduto - rowData.precoCustoProduto) * rowData.quantidadeVendida).toFixed(2)}
             </>
         );
     };
@@ -368,6 +386,7 @@ const EstoquePage = () => {
     const header = (
         <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
             <h5 className="m-0">Gerenciamento do estoque</h5>
+            <h5 className="m-0">Lucro total: R$ {lucro}</h5>
             <span className="block mt-2 md:mt-0 p-input-icon-left">
                 <i className="pi pi-search" />
                 <InputText
@@ -427,21 +446,30 @@ const EstoquePage = () => {
                         currentPageReportTemplate="Mostrando {first} de {last} do total de {totalRecords} produtos"
                         filters={filters}
                         onFilter={(e) => setFilters(e.filters)}
-                        globalFilterFields={["nomeProduto", "precoCustoProduto", "fornecedor", "dataCompra"]}
+                        globalFilterFields={["nomeProduto", "precoCustoProduto", "fornecedor", "dataCompra", "lucroPorProduto"]}
                         globalFilter={globalFilter}
                         emptyMessage="Nenhum produto encontrado."
                         header={header}
                         responsiveLayout="scroll"
+                        onValueChange={(filtered) => {
+                            // calcula o lucro só dos itens visíveis
+                            const totalLucroFiltrado = (filtered || []).reduce(
+                                (acc: number, produto: any) =>
+                                    acc + ((produto.precoVendaProduto - produto.precoCustoProduto) * produto.quantidadeVendida || 0),
+                                0
+                            );
+                            setLucro(totalLucroFiltrado);
+                        }}
                     >
                         <Column selectionMode="multiple" headerStyle={{ width: '4rem' }}></Column>
                         <Column field="id" header="Id" sortable body={idBodyTemplate}></Column>
-                        <Column field="nomeProduto" header="Nome" sortable body={nomeBodyTemplate} headerStyle={{ minWidth: '15rem' }}></Column>
-                        <Column field="fornecedor" header="Fornecedor" sortable body={fornecedorBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
+                        <Column field="nomeProduto" header="Nome" sortable body={nomeBodyTemplate}></Column>
+                        <Column field="fornecedor" header="Fornecedor" sortable body={fornecedorBodyTemplate}></Column>
                         <Column field="quantidadeEstoque" header="Quantidade em estoque" body={quantidadeEstoqueBodyTemplate} sortable></Column>
                         <Column field="precoCustoProduto" header="Preço de custo" body={precoCustoBodyTemplate} sortable></Column>
                         <Column field="quantidadeVendida" header="Quantidade vendida" body={quantidadeVendidaBodyTemplate} sortable></Column>
                         <Column field="precoVendaProduto" header="Preço de venda" body={precoVendaProdutoBodyTemplate} sortable></Column>
-                        <Column field="lucroPorProduto" header="Lucro por produto" body={lucroPorProdutoBodyTemplate} sortable></Column>
+                        <Column field="lucroPorProduto" header="Lucro" body={lucroPorProdutoBodyTemplate} sortable></Column>
                         <Column field="dataCompra" header="Data de compra" body={dataCompraBodyTemplate} sortable headerStyle={{ minWidth: '10rem' }}></Column>
                         <Column body={actionBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
                     </DataTable>
@@ -500,6 +528,7 @@ const EstoquePage = () => {
                             <label htmlFor="quantidadeVendida">Quantidade vendida</label>
                             <InputNumber id="quantidadeVendida" value={produto.quantidadeVendida} onValueChange={(e) => onInputNumberChange(e, 'quantidadeVendida')} />
                             {submitted && produto.quantidadeVendida < 0 && <small className="p-invalid" style={{ color: "#FCA5A5" }}>Quantidade não pode ser negativa.</small>}
+                            {submitted && produto.quantidadeVendida > produto.quantidadeEstoque && <small className="p-invalid" style={{ color: "#FCA5A5" }}>Quantidade vendida não pode ser maior que quantidade em estoque.</small>}
                         </div>
 
                         <div className="field">
@@ -513,6 +542,7 @@ const EstoquePage = () => {
                                 maxFractionDigits={2}
                             />
                             {submitted && produto.precoVendaProduto < 0 && <small className="p-invalid" style={{ color: "#FCA5A5" }}>Preço de venda não pode ser negativo.</small>}
+                            {submitted && produto.precoVendaProduto <= produto.precoCustoProduto && <small className="p-invalid" style={{ color: "#FCA5A5" }}>Preço de venda não pode ser menor ou igual ao preço de custo.</small>}
                         </div>
 
                         <div className="field">
