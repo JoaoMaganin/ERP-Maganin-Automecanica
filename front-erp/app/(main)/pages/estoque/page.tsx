@@ -72,16 +72,58 @@ const EstoquePage = () => {
         setDeleteProdutosDialog(false);
     };
 
+    const checaProdutoValido = (produto: ERP.EstoqueProduto): boolean => {
+        if (produto.nomeProduto == '') {
+            return true;
+        }
+
+        if (produto.fornecedor == '') {
+            return true;
+        }
+
+        if (produto.quantidadeEstoque < 0) {
+            return true;
+        }
+
+        if (produto.precoCustoProduto < 0) {
+            return true;
+        }
+
+        if (produto.quantidadeVendida < 0) {
+            return true;
+        }
+
+        if (produto.precoVendaProduto < 0) {
+            return true;
+        }
+
+        if (!produto.dataCompra) {
+            return true;
+        }
+        return false;
+    }
+
+    const checaFormatoDataValida = (date: string): boolean => {
+        const regex = /^\d{4}-\d{2}-\d{2}$/;
+        if (!regex.test(date)) return false;
+
+        const d = new Date(date);
+        return d instanceof Date && !isNaN(d.getTime()) && date === d.toISOString().split("T")[0];
+    };
+
     const saveProduto = () => {
         setSubmitted(true);
 
         if (!produto.id) {
+            if (checaProdutoValido(produto) && checaFormatoDataValida(produto.dataCompra)) {
+                return; // impede o salvamento
+            }
             estoqueProdutoService.criar(produto)
                 .then((response) => {
                     setProdutoDialog(false);
                     setProduto(produtoVazio);
                     setProdutos(null);
-                    if(!produto.dataCompra) {
+                    if (!produto.dataCompra) {
 
                     }
                     toast.current?.show({
@@ -99,6 +141,9 @@ const EstoquePage = () => {
                     });
                 })
         } else {
+            if (checaProdutoValido(produto) && checaFormatoDataValida(produto.dataCompra)) {
+                return; // impede o salvamento
+            }
             estoqueProdutoService.atualizar(produto)
                 .then((response) => {
                     setProdutoDialog(false);
@@ -429,13 +474,13 @@ const EstoquePage = () => {
                                     'p-invalid': submitted && !produto.fornecedor
                                 })}
                             />
-                            {submitted && !produto.fornecedor && <small className="p-invalid">Fornecedor é obrigatório.</small>}
+                            {submitted && !produto.fornecedor && <small className="p-invalid" style={{ color: "#FCA5A5" }}>Fornecedor é obrigatório.</small>}
                         </div>
 
                         <div className="field">
                             <label htmlFor="quantidadeEstoque">Quantidade em estoque</label>
                             <InputNumber id="quantidadeEstoque" value={produto.quantidadeEstoque} onValueChange={(e) => onInputNumberChange(e, 'quantidadeEstoque')} />
-                            {submitted && !produto.quantidadeEstoque && <small className="p-invalid">Quantidade é obrigatório.</small>}
+                            {submitted && produto.quantidadeEstoque < 0 && <small className="p-invalid" style={{ color: "#FCA5A5" }}>Quantidade não pode ser negativa.</small>}
                         </div>
 
                         <div className="field">
@@ -448,13 +493,13 @@ const EstoquePage = () => {
                                 minFractionDigits={0}
                                 maxFractionDigits={2}
                             />
-                            {submitted && !produto.nomeProduto && <small className="p-invalid">Preço é obrigatório.</small>}
+                            {submitted && produto.precoCustoProduto < 0 && <small className="p-invalid" style={{ color: "#FCA5A5" }}>Preço não pode ser negativo.</small>}
                         </div>
 
                         <div className="field">
                             <label htmlFor="quantidadeVendida">Quantidade vendida</label>
                             <InputNumber id="quantidadeVendida" value={produto.quantidadeVendida} onValueChange={(e) => onInputNumberChange(e, 'quantidadeVendida')} />
-                            {submitted && !produto.quantidadeVendida && <small className="p-invalid">Quantidade vendida.</small>}
+                            {submitted && produto.quantidadeVendida < 0 && <small className="p-invalid" style={{ color: "#FCA5A5" }}>Quantidade não pode ser negativa.</small>}
                         </div>
 
                         <div className="field">
@@ -467,11 +512,11 @@ const EstoquePage = () => {
                                 minFractionDigits={0}
                                 maxFractionDigits={2}
                             />
-                            {submitted && !produto.precoVendaProduto && <small className="p-invalid">Preço de venda é obrigatório.</small>}
+                            {submitted && produto.precoVendaProduto < 0 && <small className="p-invalid" style={{ color: "#FCA5A5" }}>Preço de venda não pode ser negativo.</small>}
                         </div>
 
                         <div className="field">
-                            <label htmlFor="dataCompra">Data de compra</label>
+                            <label htmlFor="dataCompra">Data de compra - Formato: AAAA-MM-DD</label>
                             <InputText
                                 id="dataCompra"
                                 value={produto.dataCompra}
@@ -482,7 +527,7 @@ const EstoquePage = () => {
                                     'p-invalid': submitted && !produto.dataCompra
                                 })}
                             />
-                            {submitted && !produto.dataCompra && <small className="p-invalid">Data de compra é obrigatório.</small>}
+                            {submitted && !checaFormatoDataValida(produto.dataCompra) && <small className="p-invalid" style={{ color: "#FCA5A5" }}>Formato da data incorreto ou data não existente.</small>}
                         </div>
                     </Dialog>
 
