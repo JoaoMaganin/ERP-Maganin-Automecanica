@@ -29,10 +29,12 @@ public class EstoqueProdutoService {
                 .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
 
         produtoExistente.setNomeProduto(estoqueProduto.getNomeProduto());
-        produtoExistente.setPrecoProduto(estoqueProduto.getPrecoProduto());
+        produtoExistente.setPrecoCustoProduto(estoqueProduto.getPrecoCustoProduto());
         produtoExistente.setFornecedor(estoqueProduto.getFornecedor());
         produtoExistente.setQuantidadeEstoque(estoqueProduto.getQuantidadeEstoque());
         produtoExistente.setDataCompra(estoqueProduto.getDataCompra());
+        produtoExistente.setQuantidadeVendida(estoqueProduto.getQuantidadeVendida());
+        produtoExistente.setPrecoVendaProduto(estoqueProduto.getPrecoVendaProduto());
 
         EstoqueProdutoEntity produtoAtualizado = estoqueProdutoRepository.save(produtoExistente);
         return new EstoqueProdutoDTO(produtoAtualizado);

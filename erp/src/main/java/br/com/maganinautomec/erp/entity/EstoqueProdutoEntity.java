@@ -19,7 +19,7 @@ public class EstoqueProdutoEntity {
     private String nomeProduto;
 
     @Column(nullable = false)
-    private float precoProduto;
+    private float precoCustoProduto;
 
     @Column(nullable = false)
     private String fornecedor;
@@ -28,7 +28,13 @@ public class EstoqueProdutoEntity {
     private int quantidadeEstoque;
 
     @Column(nullable = false)
+    private int quantidadeVendida;
+
+    @Column(nullable = false)
     private LocalDate dataCompra;
+
+    @Column(nullable = false)
+    private float precoVendaProduto;
 
     public EstoqueProdutoEntity() {
     }
@@ -49,12 +55,12 @@ public class EstoqueProdutoEntity {
         this.nomeProduto = nomeProduto;
     }
 
-    public float getPrecoProduto() {
-        return precoProduto;
+    public float getPrecoCustoProduto() {
+        return precoCustoProduto;
     }
 
-    public void setPrecoProduto(float precoProduto) {
-        this.precoProduto = precoProduto;
+    public void setPrecoCustoProduto(float precoCustoProduto) {
+        this.precoCustoProduto = precoCustoProduto;
     }
 
     public String getFornecedor() {
@@ -79,6 +85,22 @@ public class EstoqueProdutoEntity {
 
     public void setDataCompra(LocalDate dataCompra) {
         this.dataCompra = dataCompra;
+    }
+
+    public int getQuantidadeVendida() {
+        return quantidadeVendida;
+    }
+
+    public void setQuantidadeVendida(int quantidadeVendida) {
+        this.quantidadeVendida = quantidadeVendida;
+    }
+
+    public float getPrecoVendaProduto() {
+        return precoVendaProduto;
+    }
+
+    public void setPrecoVendaProduto(float precoVendaProduto) {
+        this.precoVendaProduto = precoVendaProduto;
     }
 
     @Override

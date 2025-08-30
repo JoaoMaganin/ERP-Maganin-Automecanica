@@ -4,17 +4,18 @@ import br.com.maganinautomec.erp.entity.EstoqueProdutoEntity;
 import org.springframework.beans.BeanUtils;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.Objects;
 
 public class EstoqueProdutoDTO {
 
     private Long id;
     private String nomeProduto;
-    private float precoProduto;
+    private float precoCustoProduto;
     private String fornecedor;
     private int quantidadeEstoque;
+    private int quantidadeVendida;
     private LocalDate dataCompra;
+    private float precoVendaProduto;
 
     public EstoqueProdutoDTO() {
     }
@@ -35,12 +36,12 @@ public class EstoqueProdutoDTO {
         this.nomeProduto = nomeProduto;
     }
 
-    public float getPrecoProduto() {
-        return precoProduto;
+    public float getPrecoCustoProduto() {
+        return precoCustoProduto;
     }
 
-    public void setPrecoProduto(float precoProduto) {
-        this.precoProduto = precoProduto;
+    public void setPrecoCustoProduto(float precoProduto) {
+        this.precoCustoProduto = precoProduto;
     }
 
     public String getFornecedor() {
@@ -65,6 +66,22 @@ public class EstoqueProdutoDTO {
 
     public void setDataCompra(LocalDate dataCompra) {
         this.dataCompra = dataCompra;
+    }
+
+    public int getQuantidadeVendida() {
+        return quantidadeVendida;
+    }
+
+    public void setQuantidadeVendida(int quantidadeVendida) {
+        this.quantidadeVendida = quantidadeVendida;
+    }
+
+    public float getPrecoVendaProduto() {
+        return precoVendaProduto;
+    }
+
+    public void setPrecoVendaProduto(float precoVendaProduto) {
+        this.precoVendaProduto = precoVendaProduto;
     }
 
     @Override
