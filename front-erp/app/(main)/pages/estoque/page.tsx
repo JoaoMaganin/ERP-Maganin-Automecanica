@@ -10,10 +10,10 @@ import { Toast } from 'primereact/toast';
 import { Toolbar } from 'primereact/toolbar';
 import { classNames } from 'primereact/utils';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { EstoqueProdutoService } from '@/demo/service/EstoqueProdutoService';
+import { EstoqueProdutoService } from '@/service/EstoqueProdutoService';
 import { InputMask } from 'primereact/inputmask';
 
-/* @todo Used 'as any' for types here. Will fix in next version due to onSelectionChange event type issue. */
+
 const EstoquePage = () => {
     let produtoVazio: ERP.EstoqueProduto = {
         id: null,
@@ -44,6 +44,7 @@ const EstoquePage = () => {
     const dt = useRef<DataTable<any>>(null);
     const estoqueProdutoService = useMemo(() => new EstoqueProdutoService(), []);
 
+    // Atualiza a lista de produtos
     useEffect(() => {
         estoqueProdutoService.listarTodos()
             .then((response) => {
@@ -56,13 +57,13 @@ const EstoquePage = () => {
             .catch((erro) => console.log(erro));
     }, [produto]);
 
+    // Calcula o lucro dinamicamente
     useEffect(() => {
         if (produtos && produtos.length > 0) {
             let totalLucro = produtos.reduce(
                 (acc, produto) => acc + ((produto.precoVendaProduto - produto.precoCustoProduto) * produto.quantidadeVendida || 0),
                 0
             );
-            console.log(totalLucro);
             setLucro(totalLucro);
         }
     }, [produtos]);
@@ -86,7 +87,7 @@ const EstoquePage = () => {
         setDeleteProdutosDialog(false);
     };
 
-    const checaProdutoValido = (produto: ERP.EstoqueProduto): boolean => {
+    const checaProdutoInvalido = (produto: ERP.EstoqueProduto): boolean => {
         if (produto.nomeProduto == '') {
             return true;
         }
@@ -125,9 +126,9 @@ const EstoquePage = () => {
         return false;
     }
 
-    const checaFormatoDataValida = (date: string): boolean => {
+    const checaFormatoDataInvalida = (date: string): boolean => {
         const regex = /^\d{4}-\d{2}-\d{2}$/;
-        if (!regex.test(date)) return false;
+        if (regex.test(date)) return true;
 
         const d = new Date(date);
         return d instanceof Date && !isNaN(d.getTime()) && date === d.toISOString().split("T")[0];
@@ -136,21 +137,19 @@ const EstoquePage = () => {
     const saveProduto = () => {
         setSubmitted(true);
 
+        if (checaProdutoInvalido(produto) && checaFormatoDataInvalida(produto.dataCompra)) {
+            return; // impede o salvamento
+        }
+
         if (!produto.id) {
-            if (checaProdutoValido(produto) && checaFormatoDataValida(produto.dataCompra)) {
-                return; // impede o salvamento
-            }
             estoqueProdutoService.criar(produto)
                 .then((response) => {
                     setProdutoDialog(false);
                     setProduto(produtoVazio);
                     setProdutos([]);
-                    if (!produto.dataCompra) {
-
-                    }
                     toast.current?.show({
                         severity: 'info',
-                        summary: 'Sucesso',
+                        summary: 'Sucesso!',
                         detail: 'Produto registrado com sucesso!'
                     });
                 })
@@ -158,14 +157,11 @@ const EstoquePage = () => {
                     console.log(error);
                     toast.current?.show({
                         severity: 'error',
-                        summary: 'Error',
-                        detail: error
+                        summary: 'Erro!',
+                        detail: 'Algum valor do produto está inválido.'
                     });
                 })
         } else {
-            if (checaProdutoValido(produto) && checaFormatoDataValida(produto.dataCompra)) {
-                return; // impede o salvamento
-            }
             estoqueProdutoService.atualizar(produto)
                 .then((response) => {
                     setProdutoDialog(false);
@@ -173,16 +169,16 @@ const EstoquePage = () => {
                     setProdutos([]);
                     toast.current?.show({
                         severity: 'info',
-                        summary: 'Success',
+                        summary: 'Sucesso!',
                         detail: 'Produto atualizado com sucesso'
                     });
                 })
                 .catch((error) => {
-                    console.log(error);
+                    console.log(error.message);
                     toast.current?.show({
                         severity: 'error',
-                        summary: 'Error',
-                        detail: 'Change error: ' + error.message
+                        summary: 'Erro!',
+                        detail: 'Algum valor do produto está inválido.'
                     });
                 })
         }
@@ -212,14 +208,15 @@ const EstoquePage = () => {
                     toast.current?.show({
                         severity: 'success',
                         summary: 'Sucesso!',
-                        detail: 'Produto deletado',
+                        detail: `Produto ${produto.nomeProduto} deletado`,
                         life: 3000
                     });
                 }).catch((error) => {
+                    console.log("Erro ao deletar: " + error.message)
                     toast.current?.show({
                         severity: 'error',
                         summary: 'Erro!',
-                        detail: 'Erro ao deletar produto',
+                        detail: `Erro ao deletar o produto ${produto.nomeProduto}`,
                         life: 3000
                     });
                 })
@@ -555,7 +552,7 @@ const EstoquePage = () => {
                         </div>
 
                         <div className="field">
-                            <label htmlFor="dataCompra">Data de compra - Formato: AAAA-MM-DD</label>
+                            <label htmlFor="dataCompra">Data de compra - Formato: ANO-MES-DIA</label>
                             <InputMask
                                 id="dataCompra"
                                 value={produto.dataCompra}
@@ -567,7 +564,7 @@ const EstoquePage = () => {
                                     'p-invalid': submitted && !produto.dataCompra
                                 })}
                             />
-                            {submitted && !checaFormatoDataValida(produto.dataCompra) && <small className="p-invalid" style={{ color: "#FCA5A5" }}>Formato da data incorreto ou data não existente.</small>}
+                            {submitted && checaFormatoDataInvalida(produto.dataCompra) && <small className="p-invalid" style={{ color: "#FCA5A5" }}>Formato da data incorreto ou data não existente.</small>}
                         </div>
                     </Dialog>
 
