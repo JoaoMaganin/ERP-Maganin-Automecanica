@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "/estoqueProduto")
+@RequestMapping(value = "/api/estoqueProduto")
 @CrossOrigin
 public class EstoqueProdutoController {
 
