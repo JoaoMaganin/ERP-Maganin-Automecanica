@@ -13,7 +13,7 @@ export class BaseService {
     }
 
     listarTodos() {
-        console.log("chamando url: " + this.url);
+        console.debug("chamando url: " + this.url);
         return axiosInstance.get(this.url);
     }
 

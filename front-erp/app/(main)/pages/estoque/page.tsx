@@ -36,7 +36,8 @@ const EstoquePage = () => {
     const [globalFilter, setGlobalFilter] = useState('');
     const [lucro, setLucro] = useState(0);
 
-    const [filters, setFilters] = useState({
+    // fix any
+    const [filters, setFilters]: any = useState({
         global: { value: "", matchMode: 'contains' }
     });
 
@@ -395,7 +396,7 @@ const EstoquePage = () => {
                     value={(filters.global as any)?.value ?? ""}
                     onInput={(e) => setGlobalFilter(e.currentTarget.value)}
                     onChange={(e) =>
-                        setFilters((prev) => ({
+                        setFilters((prev: { global: any; }) => ({
                             ...prev,
                             global: { ...(prev.global as any), value: e.target.value },
                         }))
@@ -556,7 +557,8 @@ const EstoquePage = () => {
                             <InputMask
                                 id="dataCompra"
                                 value={produto.dataCompra}
-                                onChange={(e) => onInputChange(e, 'dataCompra')}
+                                // fix any
+                                onChange={(e: any) => onInputChange(e, 'dataCompra')}
                                 mask="9999-99-99"
                                 required
                                 autoFocus
