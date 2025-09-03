@@ -13,6 +13,7 @@ const BackupComponent = () => {
 
     useEffect(() => {
         realizaBackupDiario();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Função que verifica e executa o backup diário

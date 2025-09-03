@@ -56,6 +56,7 @@ const EstoquePage = () => {
                 setProdutos(produtosComLucro);
             })
             .catch((erro) => console.log(erro));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [produto]);
 
     // Calcula o lucro dinamicamente
