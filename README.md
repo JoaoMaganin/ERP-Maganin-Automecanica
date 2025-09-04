@@ -2,6 +2,7 @@
 
 Empoderando decisões de negócios baseadas em dados com inovação.
 
+![Home](./assets/home.png)
 ---
 
 ### Construído com este conjunto de tecnologias:
