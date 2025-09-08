@@ -17,12 +17,12 @@ Empoderando decisões de negócios baseadas em dados com inovação.
 
 ## 📑 Índice
 
-- [Visão Geral]
-- [Começando]
-- [Rodando o projeto]
-- [Licensa]
-- [Contribuição]
-- [Contrato]
+- Visão Geral
+- Começando
+- Rodando o projeto
+- Licensa
+- Contribuição
+- Contato
 
 ---
 
